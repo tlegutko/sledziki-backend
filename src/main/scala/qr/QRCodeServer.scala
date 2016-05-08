@@ -3,9 +3,10 @@ package qr
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
-import akka.http.scaladsl.server.Directives._
 
 object QRCodeServer extends App {
   implicit val system = ActorSystem()
@@ -16,9 +17,14 @@ object QRCodeServer extends App {
   val logger = Logging(system, getClass)
 
   val routes = {
-    path("hello") {
+    path("generate") {
       get {
-        complete("hello world")
+        parameter("msg".as[String]) { msg =>
+          complete(HttpResponse(
+            StatusCodes.OK,
+            entity = HttpEntity(MediaTypes.`image/jpeg`, QRCodeGen.gen(msg))
+          ))
+        }
       }
     }
   }
